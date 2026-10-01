@@ -6,7 +6,10 @@ const CONFIG = {
   gravity: 22, moveAcceleration: 20, friction: 1.9, maxSpeed: 15,
   forwardBias: 1.45, holeRadius: .94, coinRadius: .47,
 };
-const COLORS = { sky: 0x98afc3, road: 0xebe4d8, rail: 0xe8dfd0, hole: 0x080a0d, ball: 0xf7f4ef };
+const COLORS = {
+  sky: 0xa9c8ff, road: 0xf4a9bd, cake: 0xf3cea0, cream: 0xfff1df,
+  jam: 0x8e2050, jamCore: 0x420d2a, ball: 0xfffbf8,
+};
 
 function radialTexture(inner = .4, outer = .5, size = 96) {
   const canvas = document.createElement('canvas');
@@ -91,25 +94,28 @@ export class GravityBallGame {
     this.camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, .1, 125);
     this.camera.position.set(0, 5, -7.2);
     this.camera.lookAt(0, .55, 4);
-    this.scene.add(new THREE.HemisphereLight(0xc9d8e8, 0xd9cfc0, .9));
-    this.scene.add(new THREE.AmbientLight(0xe8eef6, .35));
-    const sun = new THREE.DirectionalLight(0xfff0dc, 1.35);
+    this.scene.add(new THREE.HemisphereLight(0xdce9ff, 0xffcad8, 1.05));
+    this.scene.add(new THREE.AmbientLight(0xffedf3, .42));
+    const sun = new THREE.DirectionalLight(0xfff2df, 1.48);
     sun.position.set(8, 16, -4); sun.castShadow = true; sun.shadow.mapSize.set(1536, 1536);
     sun.shadow.camera.near = 1; sun.shadow.camera.far = 50; sun.shadow.camera.left = -12; sun.shadow.camera.right = 12; sun.shadow.camera.top = 14; sun.shadow.camera.bottom = -14;
     sun.shadow.bias = -.00025; sun.shadow.normalBias = .04; sun.shadow.radius = 1.5;
     this.scene.add(sun); this.sun = sun;
-    const fill = new THREE.DirectionalLight(0xb7c9dc, .42); fill.position.set(-10, 8, 10); this.scene.add(fill);
+    const fill = new THREE.DirectionalLight(0xffbad2, .48); fill.position.set(-10, 8, 10); this.scene.add(fill);
   }
 
   _buildWorld() {
     this.world = new THREE.Group(); this.scene.add(this.world);
-    const road = new THREE.Mesh(new THREE.BoxGeometry(CONFIG.roadWidth, .35, CONFIG.roadLength), new THREE.MeshStandardMaterial({ color: COLORS.road, roughness: .88, metalness: .03 }));
-    road.position.set(0, -.18, CONFIG.roadLength / 2 - 10); road.receiveShadow = true; this.world.add(road);
-    const railMaterial = new THREE.MeshStandardMaterial({ color: COLORS.rail, roughness: .8, emissive: 0xcfc3b0, emissiveIntensity: .2 });
+    const cakeBase = new THREE.Mesh(new THREE.BoxGeometry(CONFIG.roadWidth + .35, .72, CONFIG.roadLength), new THREE.MeshStandardMaterial({ color: COLORS.cake, roughness: .82 }));
+    cakeBase.position.set(0, -.42, CONFIG.roadLength / 2 - 10); cakeBase.receiveShadow = true; this.world.add(cakeBase);
+    const road = new THREE.Mesh(new THREE.BoxGeometry(CONFIG.roadWidth, .22, CONFIG.roadLength), new THREE.MeshStandardMaterial({ color: COLORS.road, roughness: .72 }));
+    road.position.set(0, -.03, CONFIG.roadLength / 2 - 10); road.receiveShadow = true; this.world.add(road);
+    const railMaterial = new THREE.MeshStandardMaterial({ color: COLORS.cream, roughness: .76 });
     for (const side of [-1, 1]) {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(.32, .42, CONFIG.roadLength), railMaterial);
-      rail.position.set(side * (CONFIG.roadWidth / 2 - .21), .05, CONFIG.roadLength / 2 - 10); this.world.add(rail);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(.26, .2, CONFIG.roadLength), railMaterial);
+      rail.position.set(side * (CONFIG.roadWidth / 2 - .16), .12, CONFIG.roadLength / 2 - 10); this.world.add(rail);
     }
+    this._buildCakeScenery();
 
     this.holes = [];
     const holeShadow = radialTexture(.58, .78, 128);
@@ -121,11 +127,11 @@ export class GravityBallGame {
         const x = clampX(rawX); const holeZ = z + (positions.length > 1 ? Math.sin(index * 1.7) * .4 : 0);
         const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.55, 2.55), new THREE.MeshBasicMaterial({ map: holeShadow, transparent: true, opacity: .56, depthWrite: false }));
         shadow.rotation.x = -Math.PI / 2; shadow.position.set(x, .012, holeZ); this.world.add(shadow);
-        const hole = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.holeRadius, 40), new THREE.MeshBasicMaterial({ color: COLORS.hole }));
+        const hole = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.holeRadius, 40), new THREE.MeshStandardMaterial({ color: COLORS.jam, roughness: .34, metalness: .04 }));
         hole.rotation.x = -Math.PI / 2; hole.position.set(x, .02, holeZ); this.world.add(hole);
-        const core = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.holeRadius * .68, 32), new THREE.MeshBasicMaterial({ color: 0x020304 }));
+        const core = new THREE.Mesh(new THREE.CircleGeometry(CONFIG.holeRadius * .68, 32), new THREE.MeshBasicMaterial({ color: COLORS.jamCore }));
         core.rotation.x = -Math.PI / 2; core.position.set(x, .024, holeZ); this.world.add(core);
-        const rim = new THREE.Mesh(new THREE.TorusGeometry(CONFIG.holeRadius, .055, 10, 40), new THREE.MeshStandardMaterial({ color: 0xb7ac99, roughness: .9 }));
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(CONFIG.holeRadius, .085, 10, 40), new THREE.MeshStandardMaterial({ color: 0xffd2df, roughness: .75 }));
         rim.rotation.x = -Math.PI / 2; rim.position.set(x, .034, holeZ); this.world.add(rim);
         this.holes.push({ x, z: holeZ, r: CONFIG.holeRadius });
       }
@@ -159,6 +165,77 @@ export class GravityBallGame {
     this.ballBlob = new THREE.Mesh(new THREE.PlaneGeometry(1.13, 1.13), new THREE.MeshBasicMaterial({ map: radialTexture(.42, .55), transparent: true, opacity: .42, depthWrite: false }));
     this.ballBlob.rotation.x = -Math.PI / 2; this.ballBlob.position.y = .015; this.world.add(this.ballBlob);
     this.vel = new THREE.Vector3();
+  }
+
+  _buildCakeScenery() {
+    const matrix = new THREE.Matrix4();
+    const quaternion = new THREE.Quaternion();
+    const scale = new THREE.Vector3();
+    const position = new THREE.Vector3();
+    const creamMaterial = new THREE.MeshStandardMaterial({ color: COLORS.cream, roughness: .78 });
+
+    const pipingGeometry = new THREE.SphereGeometry(.24, 8, 6);
+    const pipingCount = Math.floor(CONFIG.roadLength / 1.45) * 2;
+    const piping = new THREE.InstancedMesh(pipingGeometry, creamMaterial, pipingCount);
+    let pipeIndex = 0;
+    for (let z = -9; z < CONFIG.roadLength - 10; z += 1.45) {
+      for (const side of [-1, 1]) {
+        position.set(side * (CONFIG.roadWidth / 2 - .17), .25, z);
+        scale.set(1, .68, 1.35); matrix.compose(position, quaternion, scale);
+        piping.setMatrixAt(pipeIndex++, matrix);
+      }
+    }
+    piping.receiveShadow = true; this.world.add(piping);
+
+    const cakeSpots = [];
+    for (let z = 5, i = 0; z < CONFIG.roadLength - 5; z += 12.5, i += 1) {
+      for (const side of [-1, 1]) {
+        const size = .78 + ((i * 7 + (side > 0 ? 2 : 0)) % 5) * .09;
+        cakeSpots.push({ x: side * (5.5 + (i % 3) * .55), z: z + (side > 0 ? 3.8 : 0), size, h: 1.45 + (i % 4) * .22 });
+      }
+    }
+    const cakeBody = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1.08, 1, 18), new THREE.MeshStandardMaterial({ color: 0xf2c88f, roughness: .82 }), cakeSpots.length);
+    const icing = new THREE.InstancedMesh(new THREE.CylinderGeometry(1.06, 1.08, .32, 18), new THREE.MeshStandardMaterial({ color: 0xff9fc4, roughness: .7 }), cakeSpots.length);
+    const strawberry = new THREE.InstancedMesh(new THREE.ConeGeometry(.34, .72, 10), new THREE.MeshStandardMaterial({ color: 0xf04d5d, roughness: .68 }), cakeSpots.length);
+    const leaves = new THREE.InstancedMesh(new THREE.ConeGeometry(.2, .24, 6), new THREE.MeshStandardMaterial({ color: 0x70b85b, roughness: .8 }), cakeSpots.length);
+    cakeSpots.forEach((spot, i) => {
+      position.set(spot.x, spot.h * .5, spot.z); scale.set(spot.size, spot.h, spot.size); matrix.compose(position, quaternion, scale); cakeBody.setMatrixAt(i, matrix);
+      position.set(spot.x, spot.h + .04, spot.z); scale.set(spot.size, 1, spot.size); matrix.compose(position, quaternion, scale); icing.setMatrixAt(i, matrix);
+      position.set(spot.x, spot.h + .56, spot.z); scale.set(spot.size, spot.size, spot.size); matrix.compose(position, quaternion, scale); strawberry.setMatrixAt(i, matrix);
+      position.set(spot.x, spot.h + .98, spot.z); scale.set(spot.size, spot.size, spot.size); matrix.compose(position, quaternion, scale); leaves.setMatrixAt(i, matrix);
+    });
+    cakeBody.castShadow = cakeBody.receiveShadow = true; icing.castShadow = true; strawberry.castShadow = true;
+    this.world.add(cakeBody, icing, strawberry, leaves);
+
+    const candyGeometry = new THREE.SphereGeometry(.15, 8, 6);
+    const candy = new THREE.InstancedMesh(candyGeometry, new THREE.MeshStandardMaterial({ roughness: .62 }), 240);
+    const candyColors = [new THREE.Color(0x6ecdf4), new THREE.Color(0xffd25e), new THREE.Color(0xff88b6), new THREE.Color(0xb88af4), new THREE.Color(0x77d7b0)];
+    for (let i = 0; i < 240; i += 1) {
+      const side = i % 2 ? -1 : 1;
+      position.set(side * (4.45 + ((i * 17) % 21) * .07), .05 + (i % 3) * .025, -7 + i * 2.2);
+      const s = .75 + (i % 4) * .12; scale.setScalar(s); matrix.compose(position, quaternion, scale);
+      candy.setMatrixAt(i, matrix); candy.setColorAt(i, candyColors[i % candyColors.length]);
+    }
+    candy.castShadow = true; this.world.add(candy);
+
+    const rainbowColors = [0xff7fa7, 0xffb65d, 0xffefb0, 0x79d9d0, 0x7ba8ef];
+    for (let z = 27; z < CONFIG.roadLength - 15; z += 52) {
+      const arch = new THREE.Group();
+      rainbowColors.forEach((color, band) => {
+        const radius = 2.92 - band * .23;
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, .13, 8, 38, Math.PI), new THREE.MeshStandardMaterial({ color, roughness: .66 }));
+        ring.position.y = .24; ring.castShadow = true; arch.add(ring);
+      });
+      arch.position.set(0, 0, z); this.world.add(arch);
+    }
+
+    const cloud = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 7), new THREE.MeshStandardMaterial({ color: 0xffdce8, roughness: .88 }), 48);
+    for (let i = 0; i < 48; i += 1) {
+      const side = i % 2 ? -1 : 1;
+      position.set(side * (8.5 + (i % 4) * 1.1), 6.1 + (i % 5) * .45, i * 11 - 4);
+      scale.set(1.2 + (i % 3) * .34, .45 + (i % 2) * .12, .65); matrix.compose(position, quaternion, scale); cloud.setMatrixAt(i, matrix);
+    }
+    this.world.add(cloud);
   }
 
   _bindUi() {
