@@ -1,0 +1,66 @@
+<!-- AI生成 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#8da5ba" />
+  <title>重力小球 · 1分钟减价挑战</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><circle cx=%2232%22 cy=%2232%22 r=%2228%22 fill=%22%23f36b21%22/><circle cx=%2226%22 cy=%2224%22 r=%226%22 fill=%22white%22 opacity=%22.85%22/></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+  { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas" aria-label="重力小球游戏画面"></canvas>
+    <header class="hud-top" id="hud-top" hidden>
+      <div class="hud-pill hud-side"><span class="hud-label">距离</span><span class="hud-value"><span id="dist-value">0</span>m</span></div>
+      <div class="timer-pill" id="timer-pill"><span class="timer-label">剩余</span><strong id="time-value">60</strong><span>秒</span></div>
+      <div class="hud-pill hud-side hud-right"><span class="hud-label">硬币</span><span class="hud-value"><span id="score-value">0</span>枚</span></div>
+    </header>
+    <div class="player-phone" id="player-phone" hidden>本局手机：<span id="hud-phone">—</span></div>
+    <button class="sound-button" id="sound-toggle" type="button" aria-label="关闭声音" title="关闭声音">🔊</button>
+    <div class="tilt-hint" id="tilt-hint" hidden>
+      <div class="tilt-icon" aria-hidden="true"><svg viewBox="0 0 48 48" width="40" height="40"><rect x="14" y="6" width="20" height="36" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="36" r="1.6" fill="currentColor"/><path d="M8 18h6m-6 0 3-3m-3 3 3 3M40 30h-6m6 0-3-3m3 3-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <p>倾斜手机，控制小球</p><p class="touch-tip">也可在画面上滑动控制</p>
+    </div>
+    <div class="coin-feedback" id="coin-feedback" aria-live="polite">+¥1</div>
+    <footer class="hud-bottom" id="hud-bottom" hidden>
+      <div class="discount-bar"><span>已收集 <strong id="discount-score">0</strong> 枚 · 可减 <strong>¥<span id="discount-yuan">0</span></strong></span></div>
+      <p>每枚硬币可减1元</p>
+    </footer>
+
+    <div class="overlay" id="start-overlay">
+      <section class="panel start-panel" aria-labelledby="game-title">
+        <div class="eyebrow">1分钟减价挑战</div><h1 id="game-title">重力小球</h1>
+        <p class="tagline">倾斜手机 · 躲避坑洞 · 1分钟赢减价</p>
+        <form id="start-form" novalidate>
+          <label class="phone-label" for="phone-input">请输入手机号</label>
+          <div class="phone-field" id="phone-field"><span class="phone-prefix">+86</span><input id="phone-input" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="11" placeholder="请输入11位手机号" aria-describedby="phone-help phone-error" /></div>
+          <p class="phone-help" id="phone-help">手机号仅用于本局优惠凭证，结算时将脱敏显示</p>
+          <p class="phone-error" id="phone-error" role="alert" hidden>请输入正确的11位手机号</p>
+          <ul class="rules"><li>手机放平，轻轻倾斜控制方向</li><li>60秒内尽可能多地收集一元硬币</li><li>掉进黑洞即挑战结束</li><li>每枚硬币可减1元</li><li>结束后截图结算页面并发送到群里</li></ul>
+          <button class="btn-primary" id="btn-start" type="submit" disabled>开始挑战</button>
+        </form>
+        <p class="desktop-tip">电脑上可用方向键 / WASD 操作</p>
+      </section>
+    </div>
+
+    <div class="overlay result-overlay" id="over-overlay" hidden>
+      <section class="panel result-panel" id="result-card" aria-labelledby="over-title">
+        <div class="result-brand">重力小球 · 1分钟减价挑战</div><div class="result-badge" id="result-badge">挑战结果</div>
+        <h2 id="over-title">挑战完成</h2><p class="result-phone">手机号：<strong id="over-phone">—</strong></p>
+        <div class="saving-amount"><span>本次可减</span><strong>¥<span id="over-discount">0</span></strong></div>
+        <div class="result-grid"><div class="result-item"><span>游戏用时</span><strong><span id="over-time">60</span>秒</strong></div><div class="result-item"><span>前进距离</span><strong><span id="over-dist">0</span>m</strong></div><div class="result-item result-wide"><span>收集硬币</span><strong><span id="over-score">0</span>枚</strong></div></div>
+        <div class="screenshot-note"><span aria-hidden="true">📱</span><strong>请截图保存此页面，并发送到群里领取优惠</strong></div>
+        <div class="result-actions"><button class="btn-primary" id="btn-restart" type="button">再来一局</button><button class="btn-secondary" id="btn-change-phone" type="button">更换手机号</button></div>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
