@@ -205,6 +205,10 @@ export class GravityBallGame {
     this.ui.overPhone.textContent = this.maskedPhone; this.ui.overTime.textContent = String(used);
     this.ui.overDist.textContent = String(Math.floor(this.distance)); this.ui.overScore.textContent = String(this.score); this.ui.overDiscount.textContent = String(this.score);
     this.ui.overOverlay.hidden = false; this.ui.hudTop.hidden = true; this.ui.hudBottom.hidden = true; this.ui.playerPhone.hidden = true; this.ui.tiltHint.classList.add('is-hidden');
+    window.dispatchEvent(new CustomEvent('ballgame:finished', { detail: {
+      outcome: success ? 'completed' : 'fell', score: this.score,
+      distance: Math.floor(this.distance), duration: used,
+    } }));
   }
 
   returnToStart() {

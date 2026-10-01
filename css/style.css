@@ -62,10 +62,13 @@ button, input { font: inherit; }
 .result-panel h2 { font-size: 27px; font-weight: 900; }
 .result-phone { margin-top: 3px; color: #606b75; font-size: 13px; }.result-phone strong { color: #2c3742; letter-spacing: .05em; }
 .saving-amount { margin: 12px 0; padding: 12px; border-radius: 18px; background: linear-gradient(135deg, #fff1dc, #ffe0c3); color: #b43f08; display: flex; flex-direction: column; }
-.saving-amount span { font-size: 12px; font-weight: 750; }.saving-amount strong { font-size: clamp(42px, 13vw, 58px); line-height: 1.03; font-weight: 950; letter-spacing: -.04em; }
+.saving-amount > span { font-size: 12px; font-weight: 750; }
+.amount-line { display: flex; align-items: baseline; justify-content: center; gap: 3px; line-height: 1; color: #bd4107; font-weight: 950; }
+.amount-line .currency-symbol { font-size: 30px; font-weight: 850; letter-spacing: -.04em; }
+.amount-line .amount-number { font-size: clamp(48px, 15vw, 62px); font-weight: 950; letter-spacing: -.045em; }
 .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }.result-item { padding: 9px; border-radius: 12px; background: rgba(28,39,51,.055); display: flex; flex-direction: column; gap: 2px; color: #69737d; font-size: 10px; }.result-item strong { color: #26313c; font-size: 16px; }.result-wide { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; padding: 9px 13px; }
 .screenshot-note { margin: 10px 0; padding: 9px 11px; border: 1px dashed #ef853e; border-radius: 12px; background: #fff8eb; color: #a84410; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; line-height: 1.35; }
-.result-actions { display: grid; grid-template-columns: 1.25fr .9fr; gap: 8px; }.result-actions .btn-primary, .result-actions .btn-secondary { min-height: 43px; font-size: 14px; }
+.played-note { color: #7a746d; font-size: 11px; font-weight: 650; }
 
 @media (max-height: 700px) { .start-panel { padding: 16px 18px 14px; }.panel h1 { font-size: 27px; }.tagline { margin-bottom: 12px; }.phone-field { height: 45px; }.rules { margin: 10px 0; padding: 8px 12px; line-height: 1.42; }.result-panel { padding: 13px 16px 12px; }.result-panel h2 { font-size: 24px; }.saving-amount { margin: 8px 0; padding: 8px; }.saving-amount strong { font-size: 42px; }.screenshot-note { margin: 7px 0; } }
 @media (max-width: 360px) { .hud-top { left: 7px; right: 7px; gap: 5px; }.timer-pill { min-width: 92px; padding-inline: 8px; }.timer-pill strong { font-size: 22px; }.hud-pill { padding-inline: 8px; }.hud-value { font-size: 15px; }.start-panel { padding-inline: 16px; } }

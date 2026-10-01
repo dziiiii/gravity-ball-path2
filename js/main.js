@@ -40,11 +40,29 @@ form.addEventListener('submit', async (event) => {
 
   const phone = normalizedPhone();
   const maskedPhone = `${phone.slice(0, 3)}****${phone.slice(-4)}`;
-
-  // 完整手机号的后台提交将在接入用户指定的数据存储后启用。
-  // 页面、游戏对象和浏览器存储中只保留脱敏值。
-  input.value = '';
   startButton.disabled = true;
+  startButton.textContent = '正在确认今日资格…';
+
+  try {
+    const response = await fetch('./api/enter', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.allowed) throw new Error(result.error || '暂时无法开始，请稍后再试');
+  } catch (requestError) {
+    field.classList.add('has-error');
+    error.hidden = false;
+    error.textContent = requestError.message || '暂时无法开始，请稍后再试';
+    startButton.textContent = '开始挑战';
+    startButton.disabled = false;
+    return;
+  }
+
+  input.value = '';
+  startButton.textContent = '开始挑战';
   // iPhone 要求权限申请必须发生在点击事件的第一段调用中，不能放在音频异步操作之后。
   const motionEnabled = await game.input.enable();
   game.input.setCalibration();
@@ -60,16 +78,13 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
-document.getElementById('btn-restart').addEventListener('click', async () => {
-  await sound.unlock();
-  game.start(game.maskedPhone);
-});
-
-document.getElementById('btn-change-phone').addEventListener('click', () => {
-  game.returnToStart();
-  input.value = '';
-  validate(false);
-  window.setTimeout(() => input.focus(), 50);
+window.addEventListener('ballgame:finished', (event) => {
+  fetch('./api/result', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(event.detail),
+  }).catch(() => {});
 });
 
 document.addEventListener('visibilitychange', () => {
