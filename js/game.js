@@ -67,6 +67,8 @@ export class GravityBallGame {
     this._bindUi();
     this._resize();
     window.addEventListener('resize', () => this._resize());
+    window.addEventListener('orientationchange', () => window.setTimeout(() => this._resize(), 120));
+    window.visualViewport?.addEventListener('resize', () => this._resize());
     this._loop = this._loop.bind(this);
     requestAnimationFrame(this._loop);
   }
@@ -292,8 +294,14 @@ export class GravityBallGame {
   }
 
   _resize() {
-    this.camera.aspect = innerWidth / innerHeight; this.camera.fov = innerWidth < innerHeight ? 60 : 52; this.camera.updateProjectionMatrix();
-    this.renderer.setSize(innerWidth, innerHeight, false); this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    const bounds = this.canvas.parentElement.getBoundingClientRect();
+    const width = Math.max(1, Math.round(bounds.width));
+    const height = Math.max(1, Math.round(bounds.height));
+    this.camera.aspect = width / height;
+    this.camera.fov = 60;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(width, height, false);
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
   }
 
   _loop() {

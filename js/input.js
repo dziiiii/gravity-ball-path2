@@ -8,6 +8,8 @@ export class InputController {
     this.pointer = { active: false, x: 0, z: 0 };
     this.enabled = false;
     this.hasOrientation = false;
+    this.permissionState = 'unknown';
+    this._listenerAttached = false;
 
     this._onOrientation = this._onOrientation.bind(this);
     this._onKey = this._onKey.bind(this);
@@ -31,23 +33,44 @@ export class InputController {
   /** 在用户手势里调用（iOS 需要） */
   async enable() {
     this.enabled = true;
+    this.tilt.x = 0;
+    this.tilt.z = 0;
+    this._samples = [];
+    this._calib = null;
+    this._calibrating = true;
     try {
       if (
         typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function'
       ) {
         const state = await DeviceOrientationEvent.requestPermission();
-        if (state !== 'granted') return false;
+        if (state !== 'granted') {
+          this.permissionState = 'denied';
+          return false;
+        }
       }
     } catch {
-      // 桌面或不支持时忽略
+      this.permissionState = 'denied';
+      return false;
     }
 
-    window.addEventListener('deviceorientation', this._onOrientation, true);
+    if (typeof DeviceOrientationEvent === 'undefined') {
+      this.permissionState = 'unsupported';
+      return false;
+    }
+    if (!this._listenerAttached) {
+      window.addEventListener('deviceorientation', this._onOrientation, true);
+      this._listenerAttached = true;
+    }
+    this.permissionState = 'granted';
     return true;
   }
 
   setCalibration() {
+    this._calibrating = true;
+    this._samples = [];
+    this.tilt.x = 0;
+    this.tilt.z = 0;
     // 以当前姿态为零点（手机放平时用）；有采样则做平均更稳
     if (this._samples && this._samples.length > 0) {
       const n = this._samples.length;
@@ -58,6 +81,7 @@ export class InputController {
         g += s.gamma;
       }
       this._calib = { beta: b / n, gamma: g / n };
+      this._calibrating = false;
       return;
     }
     if (this._lastRaw) {
@@ -65,6 +89,7 @@ export class InputController {
         beta: this._lastRaw.beta ?? 0,
         gamma: this._lastRaw.gamma ?? 0,
       };
+      this._calibrating = false;
     }
   }
 
@@ -109,8 +134,16 @@ export class InputController {
     this._samples.push(this._lastRaw);
     if (this._samples.length > 12) this._samples.shift();
 
-    if (!this._calib) {
-      this._calib = { beta, gamma };
+    // 开局先收集数帧作为水平基准，避免第一次采样把权限开了却没有控制响应。
+    if (this._calibrating || !this._calib) {
+      if (this._samples.length < 6) return;
+      const sample = this._samples.slice(-6);
+      this._calib = {
+        beta: sample.reduce((sum, item) => sum + item.beta, 0) / sample.length,
+        gamma: sample.reduce((sum, item) => sum + item.gamma, 0) / sample.length,
+      };
+      this._calibrating = false;
+      return;
     }
 
     // 手机放平时 beta/gamma ≈ 0

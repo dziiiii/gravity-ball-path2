@@ -5,9 +5,10 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; -webkit-user-select: none; overscroll-behavior: none; }
+html, body { width: 100%; height: 100%; min-height: 100%; overflow: hidden; background: #273544; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; -webkit-user-select: none; overscroll-behavior: none; }
+body { position: fixed; inset: 0; display: flex; justify-content: center; }
 button, input { font: inherit; }
-#app { position: relative; width: 100%; height: 100%; overflow: hidden; touch-action: none; }
+#app { position: relative; width: min(100vw, 480px); height: 100vh; height: 100dvh; overflow: hidden; touch-action: none; background: var(--bg); }
 #game-canvas { display: block; width: 100%; height: 100%; }
 
 .hud-top { position: absolute; top: calc(10px + var(--safe-top)); left: 10px; right: 10px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 7px; z-index: 5; pointer-events: none; }
@@ -33,7 +34,7 @@ button, input { font: inherit; }
 .discount-bar strong { font-size: 22px; }
 
 .overlay { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom)); background: rgba(25,35,47,.48); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); overflow-y: auto; touch-action: pan-y; }
-.panel { width: min(410px, 100%); border-radius: 24px; background: linear-gradient(160deg, #fffdf7, #f8f1e5); box-shadow: 0 20px 60px rgba(15,23,34,.32); text-align: center; }
+.panel { width: 100%; max-width: 410px; border-radius: 24px; background: linear-gradient(160deg, #fffdf7, #f8f1e5); box-shadow: 0 20px 60px rgba(15,23,34,.32); text-align: center; }
 .start-panel { padding: 24px 22px 20px; }
 .eyebrow { display: inline-block; margin-bottom: 5px; padding: 5px 10px; border-radius: 999px; background: #fff0df; color: #bd4c0b; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
 .panel h1 { font-size: clamp(28px, 8vw, 36px); font-weight: 900; letter-spacing: .05em; }
@@ -51,7 +52,7 @@ button, input { font: inherit; }
 .btn-primary { width: 100%; border: 0; color: white; background: linear-gradient(180deg, #ff833a, var(--accent)); box-shadow: 0 8px 20px rgba(238,91,18,.28); }
 .btn-primary:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }.btn-primary:not(:disabled):active, .btn-secondary:active { transform: scale(.975); }
 .btn-secondary { width: 100%; border: 1px solid #d3c9ba; color: #525d68; background: #fffaf1; }
-.desktop-tip { margin-top: 9px; color: #7c858e; font-size: 10px; }
+.desktop-tip { display: none; }
 
 .result-overlay { padding-top: calc(10px + var(--safe-top)); padding-bottom: calc(10px + var(--safe-bottom)); }
 .result-panel { padding: 19px 18px 17px; border: 2px solid rgba(255,255,255,.7); }
@@ -67,5 +68,5 @@ button, input { font: inherit; }
 .result-actions { display: grid; grid-template-columns: 1.25fr .9fr; gap: 8px; }.result-actions .btn-primary, .result-actions .btn-secondary { min-height: 43px; font-size: 14px; }
 
 @media (max-height: 700px) { .start-panel { padding: 16px 18px 14px; }.panel h1 { font-size: 27px; }.tagline { margin-bottom: 12px; }.phone-field { height: 45px; }.rules { margin: 10px 0; padding: 8px 12px; line-height: 1.42; }.result-panel { padding: 13px 16px 12px; }.result-panel h2 { font-size: 24px; }.saving-amount { margin: 8px 0; padding: 8px; }.saving-amount strong { font-size: 42px; }.screenshot-note { margin: 7px 0; } }
-@media (min-width: 700px) { .hud-top { left: 20px; right: 20px; }.hud-pill { padding: 10px 16px; }.hud-label { font-size: 12px; }.hud-value { font-size: 21px; } }
+@media (max-width: 360px) { .hud-top { left: 7px; right: 7px; gap: 5px; }.timer-pill { min-width: 92px; padding-inline: 8px; }.timer-pill strong { font-size: 22px; }.hud-pill { padding-inline: 8px; }.hud-value { font-size: 15px; }.start-panel { padding-inline: 16px; } }
 @media (prefers-reduced-motion: reduce) { .timer-pill.is-urgent, .coin-feedback.show { animation-duration: 1.2s; } }

@@ -45,10 +45,19 @@ form.addEventListener('submit', async (event) => {
   // 页面、游戏对象和浏览器存储中只保留脱敏值。
   input.value = '';
   startButton.disabled = true;
-  await sound.unlock();
-  await game.input.enable();
+  // iPhone 要求权限申请必须发生在点击事件的第一段调用中，不能放在音频异步操作之后。
+  const motionEnabled = await game.input.enable();
   game.input.setCalibration();
+  await sound.unlock();
+  const controlHint = document.querySelector('#tilt-hint > p');
+  if (controlHint) controlHint.textContent = motionEnabled ? '请保持手机平稳，正在校准重力…' : '重力感应未开启，请滑动屏幕控制';
   game.start(maskedPhone);
+  if (motionEnabled) {
+    window.setTimeout(() => {
+      if (!controlHint || game.state !== 'playing') return;
+      controlHint.textContent = game.input.hasOrientation ? '倾斜手机，控制小球' : '未检测到重力数据，请滑动屏幕控制';
+    }, 1200);
+  }
 });
 
 document.getElementById('btn-restart').addEventListener('click', async () => {
