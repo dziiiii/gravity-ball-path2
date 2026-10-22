@@ -115,15 +115,30 @@ WantedBy=multi-user.target
     # END HAODUOO BALLGAME
 '''
     nginx_editor = '''
+import re
 from pathlib import Path
 p=Path(%r)
 text=p.read_text()
-if '# BEGIN HAODUOO BALLGAME' not in text:
+start='    # BEGIN HAODUOO BALLGAME'
+end='    # END HAODUOO BALLGAME'
+route=%r
+if start in text and end in text:
+    before=text.split(start,1)[0]
+    after=text.split(end,1)[1]
+    text=before+route.rstrip()+after
+else:
     anchor='    include /etc/nginx/nw4.locations;'
     if text.count(anchor)!=1:
         raise SystemExit('nginx anchor mismatch')
-    route=%r
-    p.write_text(text.replace(anchor,route+anchor))
+    text=text.replace(anchor,route+anchor)
+shortcut='    location = /mysite { return 302 /ballgame/; }\\n    location = /mysite/ { return 302 /ballgame/; }\\n'
+pattern=re.compile(r'    location = /mysite \{.*?\\n    \}\\n\\n    location = /mysite/ \{[^\\n]*\}\\n',re.S)
+if pattern.search(text):
+    text=pattern.sub(shortcut,text,count=1)
+elif 'location = /mysite' not in text:
+    anchor='    include /etc/nginx/nw4.locations;'
+    text=text.replace(anchor,shortcut+'\\n'+anchor)
+p.write_text(text)
 ''' % (NGINX_CONF, nginx_route)
     return '''#!/bin/bash
 set -Eeuo pipefail
