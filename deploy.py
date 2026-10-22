@@ -131,8 +131,8 @@ else:
     if text.count(anchor)!=1:
         raise SystemExit('nginx anchor mismatch')
     text=text.replace(anchor,route+anchor)
-shortcut='    location = /mysite { return 302 /ballgame/; }\\n    location = /mysite/ { return 302 /ballgame/; }\\n'
-pattern=re.compile(r'    location = /mysite \{.*?\\n    \}\\n\\n    location = /mysite/ \{[^\\n]*\}\\n',re.S)
+shortcut='    location = /mysite {\\n        alias /var/www/haoduoo/sites/mysite/index.html;\\n        default_type text/html;\\n        add_header Cache-Control "no-cache";\\n    }\\n\\n    location = /mysite/ { return 302 /mysite; }\\n'
+pattern=re.compile(r'    location = /mysite \{.*?    location = /mysite/ \{.*?\}\\n',re.S)
 if pattern.search(text):
     text=pattern.sub(shortcut,text,count=1)
 elif 'location = /mysite' not in text:
